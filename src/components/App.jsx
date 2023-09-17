@@ -5,16 +5,34 @@ import Filter from './filter/Filter';
 import { ContactList } from './contact-list/ContactList';
 import { Container } from './app.style';
 
+const contactsDefault = [
+  { id: nanoid(), name: 'Rosie Simpson', number: '459-12-56' },
+  { id: nanoid(), name: 'Hermione Kline', number: '443-89-12' },
+  { id: nanoid(), name: 'Eden Clements', number: '645-17-79' },
+  { id: nanoid(), name: 'Annie Copeland', number: '227-91-26' },
+];
+
 export class App extends Component {
   state = {
-    contacts: [
-      { id: nanoid(), name: 'Rosie Simpson', number: '459-12-56' },
-      { id: nanoid(), name: 'Hermione Kline', number: '443-89-12' },
-      { id: nanoid(), name: 'Eden Clements', number: '645-17-79' },
-      { id: nanoid(), name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
   };
+
+  // ? отримання контактів з локал-сторидж якщо вони є
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(contacts);
+    if (parsedContacts && parsedContacts.length) {
+      this.setState({ contacts: parsedContacts });
+    } else this.setState({ contacts: contactsDefault });
+  }
+
+  // ? записування контактів в локал-сторидж (завжди робити порівняння на попередній стан)
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
 
   formSubmitHandler = data => {
     const newContact = { id: nanoid(), ...data };
@@ -42,13 +60,6 @@ export class App extends Component {
     }));
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    console.log(prevState);
-    console.log(this.state);
-    if (this.state.contacts !== prevState) {
-      console.log('обновилося поле контактів');
-    }
-  }
   render() {
     const { contacts, filter } = this.state;
     const normalizeFilter = filter.toLowerCase();
